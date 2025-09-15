@@ -1,0 +1,6 @@
+@SzakdolgozatBackend_HostAddress = http://localhost:5122
+
+GET {{SzakdolgozatBackend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
