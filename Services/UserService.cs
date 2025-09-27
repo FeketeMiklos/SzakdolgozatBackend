@@ -9,7 +9,7 @@ namespace SzakdolgozatBackend.Services
 {
     public interface IUserService
     {
-        Task<UserGetDto> GetUserByIdAsync(int id);
+        Task<UserGetDto?> GetUserByIdAsync(int id);
         Task<List<UserGetDto>> GetAllUsersAsync();
         Task<UserGetDto> RegisterUserAsync(UserCreateDto createDto);
         Task<string> LoginAsync(UserLoginDto UserDTO);
@@ -36,7 +36,7 @@ namespace SzakdolgozatBackend.Services
 
             if (userWithGivenEmail != null)
             {
-                throw new KeyNotFoundException("User with this email already exists!");
+                throw new Exception("User with this email already exists!");
             }
 
             if (userCreateDto.Name.Length > 100)
@@ -116,7 +116,7 @@ namespace SzakdolgozatBackend.Services
             return _mapper.Map<List<UserGetDto>>(users);
         }
 
-        public async Task<UserGetDto> GetUserByIdAsync(int id)
+        public async Task<UserGetDto?> GetUserByIdAsync(int id)
         {
             var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
             if (user == null)

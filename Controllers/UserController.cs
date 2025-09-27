@@ -13,11 +13,9 @@ namespace SzakdolgozatBackend.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private AppDbContext _dbContext;
         private IUserService _userService;
-        public UserController(AppDbContext context, IUserService userService)
+        public UserController(IUserService userService)
         {
-            _dbContext = context;
             _userService = userService;
         }
 

@@ -15,9 +15,11 @@ namespace SzakdolgozatBackend
 
             // Add services to the container.
             builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<ILessonService, LessonService>();
 
             // AutoMapper Configuration
             builder.Services.AddAutoMapper(cfg => { }, typeof(UserProfile));
+            builder.Services.AddAutoMapper(cfg => { }, typeof(LessonProfile));
 
             builder.Services.AddControllers();
             builder.Services.AddOpenApi();
