@@ -17,11 +17,13 @@ namespace SzakdolgozatBackend
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<ILessonService, LessonService>();
             builder.Services.AddScoped<IStudentService, StudentService>();
+            builder.Services.AddScoped<ILessonTimeService, LessonTimeService>();
 
             // AutoMapper Configuration
             builder.Services.AddAutoMapper(cfg => { }, typeof(UserProfile));
             builder.Services.AddAutoMapper(cfg => { }, typeof(LessonProfile));
             builder.Services.AddAutoMapper(cfg => { }, typeof(StudentProfile));
+            builder.Services.AddAutoMapper(cfg => { }, typeof(LessonTimeProfile));
 
             builder.Services.AddControllers();
             builder.Services.AddOpenApi();

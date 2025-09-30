@@ -49,7 +49,7 @@ namespace SzakdolgozatBackend.Controllers
             return Ok("Student created successfully.");
         }
 
-        [HttpPut("{neptunCode}")]
+        [HttpPatch("{neptunCode}")]
         public async Task<IActionResult> PatchStudent(string neptunCode, [FromBody] StudentPatchDto studentPatchDto)
         {
             try
