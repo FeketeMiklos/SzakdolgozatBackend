@@ -12,6 +12,8 @@ namespace SzakdolgozatBackend.Services
         Task<LessonTimeGetDto> CreateLessonTimeAsync(LessonTimeCreateDto lessonTimeCreateDto);
         Task<LessonTimeGetDto> UpdateLessonTimeAsync(int id, LessonTimePatchDto lessonTimePatchDto);
         Task DeleteLessonTimeAsync(int id);
+        Task CreateOneLessontime(LessonTimeCreateDto lessonTimeCreateDto);
+        Task CreateMultipleLessontimes(LessonTimeCreateDto lessonTimeCreateDto);
     }
     public class LessonTimeService : ILessonTimeService
     {
@@ -25,6 +27,12 @@ namespace SzakdolgozatBackend.Services
 
         public async Task<LessonTimeGetDto> CreateLessonTimeAsync(LessonTimeCreateDto lessonTimeCreateDto)
         {
+            var lesson = await _dbContext.Lessons.FindAsync(lessonTimeCreateDto.LessonId);
+            if (lesson == null)
+            {
+                throw new KeyNotFoundException("Lesson with given Id does not exist!");
+            }
+
             if (lessonTimeCreateDto.EndTime < lessonTimeCreateDto.StartTime)
             {
                 throw new Exception("End time cannot be before the start time!");
@@ -45,16 +53,20 @@ namespace SzakdolgozatBackend.Services
                 throw new Exception("Cannot add end time in the past!");
             }
 
-            var lesson = await _dbContext.Lessons.FindAsync(lessonTimeCreateDto.LessonId);
-            if (lesson == null)
+            if (lesson.Reoccuring)
             {
-                throw new KeyNotFoundException("Lesson with given Id does not exist!");
+                if (lessonTimeCreateDto.NumOfReoccurences <= 0)
+                {
+                    throw new Exception("Reoccurance times must be above 0!");
+                }
+                await CreateMultipleLessontimes(lessonTimeCreateDto);
+            }
+            else
+            {
+                await CreateOneLessontime(lessonTimeCreateDto);
             }
 
             var lessonTime = _mapper.Map<LessonTime>(lessonTimeCreateDto);
-            await _dbContext.LessonTimes.AddAsync(lessonTime);
-            await _dbContext.SaveChangesAsync();
-
             return _mapper.Map<LessonTimeGetDto>(lessonTime);
         }
 
@@ -146,6 +158,26 @@ namespace SzakdolgozatBackend.Services
             }
 
             return _mapper.Map<LessonTimeGetDto>(lessonTime);
+        }
+
+        public async Task CreateMultipleLessontimes(LessonTimeCreateDto lessonTimeCreateDto)
+        {
+            List<LessonTime> lessonTimes = new List<LessonTime>();
+            for (int i = 0; i <= lessonTimeCreateDto.NumOfReoccurences; i++)
+            {
+                var lessonTime = _mapper.Map<LessonTime>(lessonTimeCreateDto);
+                lessonTime.Date = lessonTimeCreateDto.Date.AddDays(7 * i);
+                lessonTimes.Add(lessonTime);
+            }
+            await _dbContext.LessonTimes.AddRangeAsync(lessonTimes);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task CreateOneLessontime(LessonTimeCreateDto lessonTimeCreateDto)
+        {
+            var lessonTime = _mapper.Map<LessonTime>(lessonTimeCreateDto);
+            await _dbContext.LessonTimes.AddAsync(lessonTime);
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

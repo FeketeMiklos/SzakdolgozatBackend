@@ -47,7 +47,7 @@ namespace SzakdolgozatBackend.Controllers
             {
                 return BadRequest(e.Message);
             }
-            return Ok("Lesson time created successfully.");
+            return Ok("Lesson time(s) created successfully.");
         }
 
         [HttpPatch("{id}")]

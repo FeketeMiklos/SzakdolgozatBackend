@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SzakdolgozatBackend.Dtos.Lesson;
+using SzakdolgozatBackend.Dtos.LessonTime;
+using SzakdolgozatBackend.Dtos.Signature;
 using SzakdolgozatBackend.Services;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -29,6 +31,48 @@ namespace SzakdolgozatBackend.Controllers
             {
                 var lesson = await _lessonService.GetLessonByIdAsync(id);
                 return Ok(lesson);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpGet("get-teacher-lessons/{teacherId}")]
+        public async Task<ActionResult<List<LessonGetDto>>?> GetAllLessonsByTeacher(int teacherId)
+        {
+            try
+            {
+                var lessonList = await _lessonService.GetAllLessonsByTeacherAsync(teacherId);
+                return Ok(lessonList);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpGet("get-lessontimes/{lessonId}")]
+        public async Task<ActionResult<List<LessonTimeGetDto>>?> GetLessonTimesForLesson(int lessonId)
+        {
+            try
+            {
+                var lessonList = await _lessonService.GetLessonTimesForLessonAsync(lessonId);
+                return Ok(lessonList);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpGet("get-signatures/{lessonId}")]
+        public async Task<ActionResult<List<SignatureGetDto>>?> GetSignaturesForLesson(int lessonId)
+        {
+            try
+            {
+                var lessonList = await _lessonService.GetSignaturesForLessonAsync(lessonId);
+                return Ok(lessonList);
             }
             catch (Exception e)
             {

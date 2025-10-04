@@ -1,17 +1,22 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using SzakdolgozatBackend.Dtos.Lesson;
+using SzakdolgozatBackend.Dtos.LessonTime;
+using SzakdolgozatBackend.Dtos.Signature;
 using SzakdolgozatBackend.Entities;
 
 namespace SzakdolgozatBackend.Services
 {
     public interface ILessonService
     {
-        Task<List<LessonGetDto>> GetAllLessonsAsync();
+        Task<List<LessonGetDto>?> GetAllLessonsAsync();
         Task<LessonGetDto?> GetLessonByIdAsync(int id);
         Task<LessonGetDto> CreateLessonAsync(LessonCreateDto lessonCreateDto);
         Task<LessonGetDto> UpdateLessonAsync(int id, LessonPatchDto lessonPatchDto);
         Task DeleteLessonAsync(int id);
+        Task<List<LessonGetDto>?> GetAllLessonsByTeacherAsync(int teacherId);
+        Task<List<LessonTimeGetDto>?> GetLessonTimesForLessonAsync(int lessonId);
+        Task<List<SignatureGetDto>?> GetSignaturesForLessonAsync(int lessonId);
     }
 
     public class LessonService : ILessonService
@@ -65,10 +70,22 @@ namespace SzakdolgozatBackend.Services
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task<List<LessonGetDto>> GetAllLessonsAsync()
+        public async Task<List<LessonGetDto>?> GetAllLessonsAsync()
         {
             var lessons = await _dbContext.Lessons.ToListAsync();
-            return _mapper.Map<List<LessonGetDto>>(lessons);
+            return _mapper.Map<List<LessonGetDto>?>(lessons);
+        }
+
+        public async Task<List<LessonGetDto>?> GetAllLessonsByTeacherAsync(int teacherId)
+        {
+            var user = await _dbContext.Users.FindAsync(teacherId);
+            if (user == null)
+            {
+                throw new KeyNotFoundException("User with given Id does not exist!");
+            }
+
+            var lessons = await _dbContext.Lessons.Where(l => l.UserId == teacherId).ToListAsync();
+            return _mapper.Map<List<LessonGetDto>?>(lessons);
         }
 
         public async Task<LessonGetDto?> GetLessonByIdAsync(int id)
@@ -79,6 +96,30 @@ namespace SzakdolgozatBackend.Services
                 throw new KeyNotFoundException("Lesson with given Id does not exist!");
             }
             return _mapper.Map<LessonGetDto>(lesson);
+        }
+
+        public async Task<List<LessonTimeGetDto>?> GetLessonTimesForLessonAsync(int lessonId)
+        {
+            var lesson = await _dbContext.Lessons.FindAsync(lessonId);
+            if (lesson == null)
+            {
+                throw new KeyNotFoundException("Lesson with given Id does not exist!");
+            }
+
+            var lessonTimes = await _dbContext.LessonTimes.Where(lt => lt.LessonId == lessonId).ToListAsync();
+            return _mapper.Map<List<LessonTimeGetDto>?>(lessonTimes);
+        }
+
+        public async Task<List<SignatureGetDto>?> GetSignaturesForLessonAsync(int lessonId)
+        {
+            var lesson = await _dbContext.Lessons.FindAsync(lessonId);
+            if (lesson == null)
+            {
+                throw new KeyNotFoundException("Lesson with given Id does not exist!");
+            }
+
+            var signatures = await _dbContext.Signatures.Where(s => s.LessonId == lessonId).ToListAsync();
+            return _mapper.Map<List<SignatureGetDto>?>(signatures);
         }
 
         public async Task<LessonGetDto> UpdateLessonAsync(int id, LessonPatchDto lessonPatchDto)

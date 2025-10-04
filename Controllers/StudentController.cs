@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SzakdolgozatBackend.Dtos.Lesson;
+using SzakdolgozatBackend.Dtos.Signature;
 using SzakdolgozatBackend.Dtos.Student;
 using SzakdolgozatBackend.Services;
 
@@ -28,6 +30,20 @@ namespace SzakdolgozatBackend.Controllers
             {
                 var student = await _studentService.GetStudentByNeptunCodeAsync(neptunCode);
                 return Ok(student);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpGet("get-signatures/{neptunCode}")]
+        public async Task<ActionResult<List<SignatureGetDto>>?> GetSignaturesByStudent(string neptunCode)
+        {
+            try
+            {
+                var signatures = await _studentService.GetSignaturesByStudentAsync(neptunCode);
+                return Ok(signatures);
             }
             catch (Exception e)
             {

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using SzakdolgozatBackend.Dtos.Lesson;
+using SzakdolgozatBackend.Dtos.Signature;
 using SzakdolgozatBackend.Dtos.Student;
 using SzakdolgozatBackend.Entities;
 
@@ -13,6 +14,7 @@ namespace SzakdolgozatBackend.Services
         Task<StudentGetDto> CreateStudentAsync(StudentCreateDto studentCreateDto);
         Task<StudentGetDto> UpdateStudentAsync(string neptunCode, StudentPatchDto studentPatchDto);
         Task DeleteStudentAsync(string neptunCode);
+        Task<List<SignatureGetDto>?> GetSignaturesByStudentAsync(string neptunCode);
     }
 
     public class StudentService : IStudentService
@@ -67,6 +69,20 @@ namespace SzakdolgozatBackend.Services
         {
             var students = await _dbContext.Students.ToListAsync();
             return _mapper.Map<List<StudentGetDto>>(students);
+        }
+
+        public async Task<List<SignatureGetDto>?> GetSignaturesByStudentAsync(string neptunCode)
+        {
+            var student = await _dbContext.Students.FindAsync(neptunCode);
+            if (student == null)
+            {
+                throw new KeyNotFoundException("Student with given Neptun code does not exist!");
+            }
+
+            var signatures = await _dbContext.Signatures
+                .Where(s => s.StudentNeptunCode == neptunCode)
+                .ToListAsync();
+            return _mapper.Map<List<SignatureGetDto>?>(signatures);
         }
 
         public async Task<StudentGetDto?> GetStudentByNeptunCodeAsync(string neptunCode)
