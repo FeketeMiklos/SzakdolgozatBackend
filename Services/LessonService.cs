@@ -17,6 +17,7 @@ namespace SzakdolgozatBackend.Services
         Task<List<LessonGetDto>?> GetAllLessonsByTeacherAsync(int teacherId);
         Task<List<LessonTimeGetDto>?> GetLessonTimesForLessonAsync(int lessonId);
         Task<List<SignatureGetDto>?> GetSignaturesForLessonAsync(int lessonId);
+        Task<Lesson> LessonExists(int id);
     }
 
     public class LessonService : ILessonService
@@ -61,11 +62,7 @@ namespace SzakdolgozatBackend.Services
 
         public async Task DeleteLessonAsync(int id)
         {
-            var lesson = await _dbContext.Lessons.FindAsync(id);
-            if (lesson == null)
-            {
-                throw new KeyNotFoundException("Lesson with given Id does not exist!");
-            }
+            Lesson lesson = await LessonExists(id);
             _dbContext.Remove(lesson);
             await _dbContext.SaveChangesAsync();
         }
@@ -89,11 +86,7 @@ namespace SzakdolgozatBackend.Services
 
         public async Task<LessonGetDto?> GetLessonByIdAsync(int id)
         {
-            var lesson = await _dbContext.Lessons.FindAsync(id);
-            if (lesson == null)
-            {
-                throw new KeyNotFoundException("Lesson with given Id does not exist!");
-            }
+            Lesson lesson = await LessonExists(id);
             return _mapper.Map<LessonGetDto>(lesson);
         }
 
@@ -121,11 +114,7 @@ namespace SzakdolgozatBackend.Services
 
         public async Task<LessonGetDto> UpdateLessonAsync(int id, LessonPatchDto lessonPatchDto)
         {
-            var lesson = await _dbContext.Lessons.FindAsync(id);
-            if (lesson == null)
-            {
-                throw new KeyNotFoundException("Lesson with given Id does not exist!");
-            }
+            Lesson lesson = await LessonExists(id);
 
             if (lessonPatchDto.Name != null && lessonPatchDto.Name.Length > 100)
             {
@@ -145,6 +134,15 @@ namespace SzakdolgozatBackend.Services
             }
 
             return _mapper.Map<LessonGetDto>(lesson);
+        }
+        public async Task<Lesson> LessonExists(int id)
+        {
+            var lesson = await _dbContext.Lessons.FindAsync(id);
+            if (lesson == null)
+            {
+                throw new KeyNotFoundException("Lesson with given Id does not exist!");
+            }
+            return lesson;
         }
     }
 }

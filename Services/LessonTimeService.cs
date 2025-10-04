@@ -14,6 +14,7 @@ namespace SzakdolgozatBackend.Services
         Task DeleteLessonTimeAsync(int id);
         Task CreateOneLessontime(LessonTimeCreateDto lessonTimeCreateDto);
         Task CreateMultipleLessontimes(LessonTimeCreateDto lessonTimeCreateDto);
+        Task<LessonTime> LessonTimeExists(int id);
     }
     public class LessonTimeService : ILessonTimeService
     {
@@ -72,11 +73,7 @@ namespace SzakdolgozatBackend.Services
 
         public async Task DeleteLessonTimeAsync(int id)
         {
-            var lessonTime = await _dbContext.LessonTimes.FindAsync(id);
-            if (lessonTime == null)
-            {
-                throw new KeyNotFoundException("Lesson time with given Id does not exist!");
-            }
+            LessonTime lessonTime = await LessonTimeExists(id);
             _dbContext.LessonTimes.Remove(lessonTime);
             await _dbContext.SaveChangesAsync();
         }
@@ -88,22 +85,13 @@ namespace SzakdolgozatBackend.Services
 
         public async Task<LessonTimeGetDto?> GetLessonTimeByIdAsync(int id)
         {
-            var lessonTime = await _dbContext.LessonTimes.FindAsync(id);
-            if (lessonTime == null)
-            {
-                throw new KeyNotFoundException("Lesson time with given Id does not exist!");
-            }
+            LessonTime lessonTime = await LessonTimeExists(id);
             return _mapper.Map<LessonTimeGetDto>(lessonTime);
         }
 
         public async Task<LessonTimeGetDto> UpdateLessonTimeAsync(int id, LessonTimePatchDto lessonTimePatchDto)
         {
-            var lessonTime = await _dbContext.LessonTimes.FindAsync(id);
-
-            if (lessonTime == null)
-            {
-                throw new KeyNotFoundException("Lesson time with given Id does not exist!");
-            }
+            LessonTime lessonTime = await LessonTimeExists(id);
 
             // Validation fot start and end time
             if (lessonTimePatchDto.StartTime != null && lessonTimePatchDto.EndTime != null && lessonTimePatchDto.EndTime < lessonTimePatchDto.StartTime)
@@ -178,6 +166,16 @@ namespace SzakdolgozatBackend.Services
             var lessonTime = _mapper.Map<LessonTime>(lessonTimeCreateDto);
             await _dbContext.LessonTimes.AddAsync(lessonTime);
             await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<LessonTime> LessonTimeExists(int id)
+        {
+            var lessonTime = await _dbContext.LessonTimes.FindAsync(id);
+            if (lessonTime == null)
+            {
+                throw new KeyNotFoundException("Lesson time with given Id does not exist!");
+            }
+            return lessonTime;
         }
     }
 }

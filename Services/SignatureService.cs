@@ -1,6 +1,4 @@
-﻿
-
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using SzakdolgozatBackend.Dtos.Signature;
 using SzakdolgozatBackend.Entities;
@@ -14,6 +12,7 @@ namespace SzakdolgozatBackend.Services
         Task<SignatureGetDto> CreateSignatureAsync(SignatureCreateDto signatureCreateDto);
         Task<SignatureGetDto> UpdateSignatureAsync(int id, SignaturePatchDto signaturePatchDto);
         Task DeleteSignatureAsync(int id);
+        Task<Signature> SignatureExists(int id);
     }
     public class SignatureService : ISignatureService
     {
@@ -46,12 +45,8 @@ namespace SzakdolgozatBackend.Services
 
         public async Task DeleteSignatureAsync(int id)
         {
-            var signature = _dbContext.Signatures.FindAsync(id);
-            if (signature == null)
-            {
-                throw new KeyNotFoundException("Signature with given Id does not exist!");
-            }
-            _dbContext.Signatures.Remove(signature.Result);
+            Signature signature = await SignatureExists(id);
+            _dbContext.Signatures.Remove(signature);
             await _dbContext.SaveChangesAsync();
         }
 
@@ -63,21 +58,13 @@ namespace SzakdolgozatBackend.Services
 
         public async Task<SignatureGetDto?> GetSignatureByIdAsync(int id)
         {
-            var signature = await _dbContext.Signatures.FindAsync(id);
-            if (signature == null)
-            {
-                throw new KeyNotFoundException("Signature with given Id does not exist!");
-            }
+            Signature signature = await SignatureExists(id);
             return _mapper.Map<SignatureGetDto>(signature);
         }
 
         public async Task<SignatureGetDto> UpdateSignatureAsync(int id, SignaturePatchDto signaturePatchDto)
         {
-            var signature = await _dbContext.Signatures.FindAsync(id);
-            if (signature == null)
-            {
-                throw new KeyNotFoundException("Signature with given Id does not exist!");
-            }
+            Signature signature = await SignatureExists(id);
 
             if (signaturePatchDto.LessonId != null && !await _dbContext.Lessons.AnyAsync(l => l.Id == signaturePatchDto.LessonId))
             {
@@ -103,6 +90,16 @@ namespace SzakdolgozatBackend.Services
                 throw new Exception(e.Message);
             }
             return _mapper.Map<SignatureGetDto>(signature);
+        }
+
+        public async Task<Signature> SignatureExists(int id)
+        {
+            var signature = await _dbContext.Signatures.FindAsync(id);
+            if (signature == null)
+            {
+                throw new KeyNotFoundException("Signature with given Id does not exist!");
+            }
+            return signature;
         }
     }
 }

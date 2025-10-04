@@ -15,6 +15,7 @@ namespace SzakdolgozatBackend.Services
         Task<StudentGetDto> UpdateStudentAsync(string neptunCode, StudentPatchDto studentPatchDto);
         Task DeleteStudentAsync(string neptunCode);
         Task<List<SignatureGetDto>?> GetSignaturesByStudentAsync(string neptunCode);
+        Task<Student> StudentExists(string neptunCode);
     }
 
     public class StudentService : IStudentService
@@ -56,11 +57,7 @@ namespace SzakdolgozatBackend.Services
 
         public async Task DeleteStudentAsync(string neptunCode)
         {
-            var student = await _dbContext.Students.FindAsync(neptunCode);
-            if (student == null)
-            {
-                throw new KeyNotFoundException("Student with given Neptun code does not exist!");
-            }
+            var student = await StudentExists(neptunCode);
             _dbContext.Students.Remove(student);
             await _dbContext.SaveChangesAsync();
         }
@@ -73,32 +70,19 @@ namespace SzakdolgozatBackend.Services
 
         public async Task<List<SignatureGetDto>?> GetSignaturesByStudentAsync(string neptunCode)
         {
-            var student = await _dbContext.Students.Include(s => s.Signatures).FirstOrDefaultAsync(s => s.NeptunCode == neptunCode);
-            if (student == null)
-            {
-                throw new KeyNotFoundException("Student with given Neptun code does not exist!");
-            }
-
+            var student = await StudentExists(neptunCode);
             return _mapper.Map<List<SignatureGetDto>?>(student.Signatures);
         }
 
         public async Task<StudentGetDto?> GetStudentByNeptunCodeAsync(string neptunCode)
         {
-            var student = await _dbContext.Students.FindAsync(neptunCode);
-            if (student == null)
-            {
-                throw new KeyNotFoundException("Student with given Neptun code does not exist!");
-            }
+            var student = await StudentExists(neptunCode);
             return _mapper.Map<StudentGetDto>(student);
         }
 
         public async Task<StudentGetDto> UpdateStudentAsync(string neptunCode, StudentPatchDto studentPatchDto)
         {
-            var student = await _dbContext.Students.FindAsync(neptunCode);
-            if (student == null)
-            {
-                throw new KeyNotFoundException("Student with given Neptun code does not exist!");
-            }
+            var student = await StudentExists(neptunCode);
 
             if (studentPatchDto.Name != null && studentPatchDto.Name.Length > 100)
             {
@@ -118,6 +102,16 @@ namespace SzakdolgozatBackend.Services
             }
 
             return _mapper.Map<StudentGetDto>(student);
+        }
+
+        public async Task<Student> StudentExists(string neptunCode)
+        {
+            Student student = await _dbContext.Students.FindAsync(neptunCode);
+            if (student == null)
+            {
+                throw new KeyNotFoundException("Student with given Neptun code does not exist!");
+            }
+            return student;
         }
     }
 }

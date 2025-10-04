@@ -17,6 +17,7 @@ namespace SzakdolgozatBackend.Services
         Task DeleteUserAsync(int id);
         Task ChangePasswordAsync(int id, PasswordChangeDto passwordChangeDto);
         Task ForgottenPasswordChangeAsync(ForgottenPasswordDto forgottenPasswordChangeDto);
+        Task<User> UserExists(int id);
     }
 
     public class UserService : IUserService
@@ -60,22 +61,14 @@ namespace SzakdolgozatBackend.Services
 
         public async Task DeleteUserAsync(int id)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
-            if (user == null)
-            {
-                throw new KeyNotFoundException("User with given Id does not exist!");
-            }
+            User user = await UserExists(id);
             _dbContext.Users.Remove(user);
             await _dbContext.SaveChangesAsync();
         }
 
         public async Task ChangePasswordAsync(int id, PasswordChangeDto passwordChangeDto)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
-            if (user == null)
-            {
-                throw new KeyNotFoundException("User with given Id does not exist!");
-            }
+            User user = await UserExists(id);
 
             if (!Argon2.Verify(user.PasswordHash, passwordChangeDto.OldPassword))
             {
@@ -118,11 +111,7 @@ namespace SzakdolgozatBackend.Services
 
         public async Task<UserGetDto?> GetUserByIdAsync(int id)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
-            if (user == null)
-            {
-                throw new KeyNotFoundException("User with given Id does not exist!");
-            }
+            User user = await UserExists(id);
             return _mapper.Map<UserGetDto>(user);
         }
 
@@ -145,11 +134,7 @@ namespace SzakdolgozatBackend.Services
 
         public async Task<UserGetDto> UpdateUserDataAsync(int id, UserPatchDto updateDto)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
-            if (user == null)
-            {
-                throw new KeyNotFoundException("User with given Id does not exist!");
-            }
+            User user = await UserExists(id);
 
             if (updateDto.Name != null)
             {
@@ -180,6 +165,15 @@ namespace SzakdolgozatBackend.Services
             }
 
             return _mapper.Map<UserGetDto>(user);
+        }
+        public async Task<User> UserExists(int id)
+        {
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null)
+            {
+                throw new KeyNotFoundException("User with given Id does not exist!");
+            }
+            return user;
         }
     }
 }
