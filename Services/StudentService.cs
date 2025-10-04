@@ -73,16 +73,13 @@ namespace SzakdolgozatBackend.Services
 
         public async Task<List<SignatureGetDto>?> GetSignaturesByStudentAsync(string neptunCode)
         {
-            var student = await _dbContext.Students.FindAsync(neptunCode);
+            var student = await _dbContext.Students.Include(s => s.Signatures).FirstOrDefaultAsync(s => s.NeptunCode == neptunCode);
             if (student == null)
             {
                 throw new KeyNotFoundException("Student with given Neptun code does not exist!");
             }
 
-            var signatures = await _dbContext.Signatures
-                .Where(s => s.StudentNeptunCode == neptunCode)
-                .ToListAsync();
-            return _mapper.Map<List<SignatureGetDto>?>(signatures);
+            return _mapper.Map<List<SignatureGetDto>?>(student.Signatures);
         }
 
         public async Task<StudentGetDto?> GetStudentByNeptunCodeAsync(string neptunCode)

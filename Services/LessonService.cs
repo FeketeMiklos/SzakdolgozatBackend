@@ -78,14 +78,13 @@ namespace SzakdolgozatBackend.Services
 
         public async Task<List<LessonGetDto>?> GetAllLessonsByTeacherAsync(int teacherId)
         {
-            var user = await _dbContext.Users.FindAsync(teacherId);
+            var user = await _dbContext.Users.Include(u => u.Lessons).FirstOrDefaultAsync(u=> u.Id == teacherId);
             if (user == null)
             {
                 throw new KeyNotFoundException("User with given Id does not exist!");
             }
-
-            var lessons = await _dbContext.Lessons.Where(l => l.UserId == teacherId).ToListAsync();
-            return _mapper.Map<List<LessonGetDto>?>(lessons);
+            
+            return _mapper.Map<List<LessonGetDto>?>(user.Lessons);
         }
 
         public async Task<LessonGetDto?> GetLessonByIdAsync(int id)
@@ -100,26 +99,24 @@ namespace SzakdolgozatBackend.Services
 
         public async Task<List<LessonTimeGetDto>?> GetLessonTimesForLessonAsync(int lessonId)
         {
-            var lesson = await _dbContext.Lessons.FindAsync(lessonId);
+            var lesson = await _dbContext.Lessons.Include(l => l.LessonTimes).FirstOrDefaultAsync(l => l.Id == lessonId);
             if (lesson == null)
             {
                 throw new KeyNotFoundException("Lesson with given Id does not exist!");
             }
 
-            var lessonTimes = await _dbContext.LessonTimes.Where(lt => lt.LessonId == lessonId).ToListAsync();
-            return _mapper.Map<List<LessonTimeGetDto>?>(lessonTimes);
+            return _mapper.Map<List<LessonTimeGetDto>?>(lesson.LessonTimes);
         }
 
         public async Task<List<SignatureGetDto>?> GetSignaturesForLessonAsync(int lessonId)
         {
-            var lesson = await _dbContext.Lessons.FindAsync(lessonId);
+            var lesson = await _dbContext.Lessons.Include(l => l.Signatures).FirstOrDefaultAsync(l => l.Id == lessonId);
             if (lesson == null)
             {
                 throw new KeyNotFoundException("Lesson with given Id does not exist!");
             }
 
-            var signatures = await _dbContext.Signatures.Where(s => s.LessonId == lessonId).ToListAsync();
-            return _mapper.Map<List<SignatureGetDto>?>(signatures);
+            return _mapper.Map<List<SignatureGetDto>?>(lesson.Signatures);
         }
 
         public async Task<LessonGetDto> UpdateLessonAsync(int id, LessonPatchDto lessonPatchDto)
