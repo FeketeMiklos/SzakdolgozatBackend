@@ -1,4 +1,8 @@
 
+using SzakdolgozatBackend.Entities;
+using SzakdolgozatBackend.Profiles;
+using SzakdolgozatBackend.Services;
+
 namespace SzakdolgozatBackend
 {
     public class Program
@@ -7,11 +11,27 @@ namespace SzakdolgozatBackend
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddDbContext<AppDbContext>();
+
             // Add services to the container.
+            builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<ILessonService, LessonService>();
+            builder.Services.AddScoped<IStudentService, StudentService>();
+            builder.Services.AddScoped<ILessonTimeService, LessonTimeService>();
+            builder.Services.AddScoped<ISignatureService, SignatureService>();
+
+            // AutoMapper Configuration
+            builder.Services.AddAutoMapper(cfg => { }, typeof(UserProfile));
+            builder.Services.AddAutoMapper(cfg => { }, typeof(LessonProfile));
+            builder.Services.AddAutoMapper(cfg => { }, typeof(StudentProfile));
+            builder.Services.AddAutoMapper(cfg => { }, typeof(LessonTimeProfile));
+            builder.Services.AddAutoMapper(cfg => { }, typeof(SignatureProfile));
 
             builder.Services.AddControllers();
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
+
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
 
@@ -22,9 +42,11 @@ namespace SzakdolgozatBackend
             }
 
             app.UseHttpsRedirection();
+            
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
             app.UseAuthorization();
-
 
             app.MapControllers();
 
