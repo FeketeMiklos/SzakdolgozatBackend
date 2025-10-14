@@ -1,4 +1,5 @@
 
+using SzakdolgozatBackend.Email;
 using SzakdolgozatBackend.Entities;
 using SzakdolgozatBackend.Profiles;
 using SzakdolgozatBackend.Services;
@@ -19,6 +20,9 @@ namespace SzakdolgozatBackend
             builder.Services.AddScoped<IStudentService, StudentService>();
             builder.Services.AddScoped<ILessonTimeService, LessonTimeService>();
             builder.Services.AddScoped<ISignatureService, SignatureService>();
+            builder.Services.AddScoped<IEmailService, EmailService>();
+
+            builder.Services.AddFluentEmail(builder.Configuration);
 
             // AutoMapper Configuration
             builder.Services.AddAutoMapper(cfg => { }, typeof(UserProfile));
